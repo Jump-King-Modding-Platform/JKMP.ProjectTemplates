@@ -1,0 +1,16 @@
+{
+    "$schema": "http://json.schemastore.org/template",
+    "author": "Jump King Multiplayer",
+    "classifications": [
+        "JKMP",
+        "Plugin"
+    ],
+    "identity": "JKMP.Plugin.ProjectTemplate",
+    "name": "JKMP Plugin",
+    "sourceName": "ProjectTemplate",
+    "shortName": "jkmp-plugin",
+    "tags": {
+        "language": "C#",
+        "type": "solution"
+    }
+}
