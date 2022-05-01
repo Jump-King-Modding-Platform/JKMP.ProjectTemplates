@@ -5,12 +5,14 @@
         <Nullable>enable</Nullable>
         <PlatformTarget>x86</PlatformTarget>
 
-        <!-- Package properties -->
+        <!-- Package/plugin properties -->
         <PackageId>JKMP.Plugin.ProjectTemplate</PackageId>
         <PackageDescription>This is where you write the description of the plugin.</PackageDescription>
         <Authors>Your Name</Authors>
         <Version>0.0.1</Version>
-        <PluginName>Template Project</PluginName>
+        <PluginName>TemplateProject (change me)</PluginName>
+        <!-- Unique plugin id, has to match the plugin's directory name and the plugin's entry class name, not including the Plugin suffix -->
+        <PluginId>ProjectTemplate</PluginId>
     </PropertyGroup>
 
     <ItemGroup>
@@ -19,7 +21,7 @@
 
     <ItemGroup>
         <!-- Add files here that should go into the plugin's root directory -->
-        <RootFiles Include="$(TargetDir)JKMP.Plugin.ProjectTemplate.dll" />
+        <RootFiles Include="$(TargetDir)JKMP.Plugin.$(PluginId).dll" />
     </ItemGroup>
 
     <ItemGroup>
@@ -35,6 +37,8 @@
     <!-- Import development variables from the solution directory -->
     <PropertyGroup>
         <DevVarsFile>$(SolutionDir)DevVars.targets</DevVarsFile>
+
+        <!-- Wish there was a better way to do this -->
         <DevVarsFileExists Condition="Exists('$(DevVarsFile)')">true</DevVarsFileExists>
         <DevVarsFileExists Condition="!Exists('$(DevVarsFile)')">false</DevVarsFileExists>
     </PropertyGroup>
@@ -51,45 +55,47 @@
     </Target>
 
     <!-- Copy files to game directories -->
-    <Target Name="CopyRootFilesToGameDirectory" AfterTargets="PostBuildEvent" Condition="$(CI) == '' and $(DevVarsFileExists)" Outputs="%(GameDirectory.Identity)">
-        <PropertyGroup>
-            <Destination>%(GameDirectory.Identity)</Destination>
+    <Target Name="CopyFilesAfterBuild" AfterTargets="PostBuildEvent" Condition="$(CI) == '' and $(DevVarsFileExists)" Outputs="%(GameDirectory.Identity)">
+        <PropertyGroup Condition="$(DevVarsFileExists)">
+            <Destination>%(GameDirectory.Identity)/JKMP/Plugins/$(PluginId)</Destination>
         </PropertyGroup>
 
-        <Message Importance="high" Text="Copying root files to $(Destination)/JKMP/Plugins/ProjectTemplate" />
-        <Copy SourceFiles="@(RootFiles)" DestinationFolder="$(Destination)/JKMP/Plugins/ProjectTemplate" SkipUnchangedFiles="true" />
+        <MSBuild Projects="$(MSBuildProjectFullPath)" Properties="Destination=$(Destination)" Targets="CopyFilesToDestination" />
+        <MSBuild Projects="$(MSBuildProjectFullPath)" Properties="Destination=$(Destination)" Targets="GeneratePluginMetaFile" />
     </Target>
 
-    <!-- Copy dependencies to game directories -->
-    <Target Name="CopyDependenciesToGameDirectory" AfterTargets="CopyRootFilesToGameDirectory" Condition="$(CI) == '' And $(DependencyFiles) != '' and $(DevVarsFileExists)" Outputs="%(GameDirectory.Identity)">
+    <!-- Copy files to publish directory when publishing -->
+    <Target Name="CopyFilesAfterPublish" AfterTargets="Publish">
         <PropertyGroup>
-            <Destination>%(GameDirectory.Identity)</Destination>
+            <Destination>$(ProjectDir)bin/published_plugin/$(PluginId)</Destination>
         </PropertyGroup>
 
-        <Message Importance="high" Text="Copying dependencies to $(Destination)/JKMP/Plugins/ProjectTemplate/Dependencies" />
-        <Copy SourceFiles="@(DependencyFiles)" DestinationFolder="$(Destination)/JKMP/Plugins/ProjectTemplate/Dependencies" SkipUnchangedFiles="true" />
+        <MSBuild Projects="$(MSBuildProjectFullPath)" Properties="Destination=$(Destination)" Targets="CopyFilesToDestination" />
+        <MSBuild Projects="$(MSBuildProjectFullPath)" Properties="Destination=$(Destination)" Targets="GeneratePluginMetaFile" />
+        <Message Importance="high" Text="Plugin published to $(Destination)" />
     </Target>
 
-    <!-- Copy dependencies to game directories -->
-    <Target Name="CopyContentToGameDirectory" AfterTargets="CopyDependenciesToGameDirectory" Condition="$(CI) == '' And $(ContentFiles) != '' and $(DevVarsFileExists)" Outputs="%(GameDirectory.Identity)">
-        <PropertyGroup>
-            <Destination>%(GameDirectory.Identity)</Destination>
-        </PropertyGroup>
-
-        <Message Importance="high" Text="Copying content to $(Destination)/JKMP/Plugins/ProjectTemplate/Content" />
-        <Copy SourceFiles="@(ContentFiles)" DestinationFolder="$(Destination)/JKMP/Plugins/ProjectTemplate/Content/%(RecursiveDir)" SkipUnchangedFiles="true" />
+    <!-- This task copies all plugin files to $(Destination) -->
+    <Target Name="CopyFilesToDestination">
+        <CallTarget Targets="CopyRootFilesToDestination;CopyDependenciesToDestination;CopyContentToDestination" />
     </Target>
 
-    <Target Name="GeneratePluginAfterBuild" AfterTargets="CopyDependenciesToGameDirectory" Condition="$(CI) == '' and $(DevVarsFileExists)" Outputs="%(GameDirectory.Identity)">
-        <PropertyGroup>
-            <Destination>%(GameDirectory.Identity)</Destination>
-        </PropertyGroup>
-
-        <Message Importance="high" Text="Generating plugin.json" />
-        <CallTarget Targets="GeneratePluginMetaFile" />
+    <Target Name="CopyRootFilesToDestination">
+        <Message Importance="high" Text="Copying root files to '$(Destination)'" />
+        <Copy SourceFiles="@(RootFiles)" DestinationFolder="$(Destination)/" SkipUnchangedFiles="true" />
     </Target>
 
-    <!-- Generate plugin.json -->
+    <Target Name="CopyDependenciesToDestination" Condition="$(DependencyFiles) != ''">
+        <Message Importance="high" Text="Copying dependencies to '$(Destination)/Dependencies'" />
+        <Copy SourceFiles="@(DependencyFiles)" DestinationFolder="$(Destination)/Dependencies" SkipUnchangedFiles="true" />
+    </Target>
+
+    <Target Name="CopyContentToDestination" Condition="$(ContentFiles) != ''">
+        <Message Importance="high" Text="Copying content to '$(Destination)/Content'" />
+        <Copy SourceFiles="@(ContentFiles)" DestinationFolder="$(Destination)/Content/%(RecursiveDir)" SkipUnchangedFiles="true" />
+    </Target>
+
+    <!-- This task generates the plugin.json file -->
     <Target Name="GeneratePluginMetaFile">
         <PropertyGroup>
             <Lines>
@@ -106,6 +112,7 @@
             </Lines>
         </PropertyGroup>
 
-        <WriteLinesToFile File="$(Destination)/JKMP/Plugins/ProjectTemplate/plugin.json" Lines="$(Lines)" Overwrite="true" Encoding="utf-8" WriteOnlyWhenDifferent="true" />
+        <Message Importance="high" Text="Generating plugin.json and saving to '$(Destination)/plugin.json'" />
+        <WriteLinesToFile File="$(Destination)/plugin.json" Lines="$(Lines)" Overwrite="true" Encoding="utf-8" WriteOnlyWhenDifferent="true" />
     </Target>
 </Project>
