@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <TargetFramework>net462</TargetFramework>
-        <LangVersion>9</LangVersion>
+        <LangVersion>10</LangVersion>
         <Nullable>enable</Nullable>
         <PlatformTarget>x86</PlatformTarget>
 
@@ -10,7 +10,7 @@
         <PackageDescription>This is where you write the description of the plugin.</PackageDescription>
         <Authors>Your Name</Authors>
         <Version>0.0.1</Version>
-        <PluginName>TemplateProject (change me)</PluginName>
+        <Title>Plugin Template Project</Title>
         <!-- Unique plugin id, has to match the plugin's directory name and the plugin's entry class name, not including the Plugin suffix -->
         <PluginId>ProjectTemplate</PluginId>
     </PropertyGroup>
@@ -109,7 +109,7 @@
         <PropertyGroup>
             <Lines>
 {
-    "name": "$(PluginName)",
+    "name": "$(Title)",
     "description": "$(PackageDescription)",
     "version": "$(Version)",
     "authors": [
