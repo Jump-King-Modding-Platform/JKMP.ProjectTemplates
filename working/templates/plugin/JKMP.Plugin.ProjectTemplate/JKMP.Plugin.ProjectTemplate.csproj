@@ -55,7 +55,7 @@
     </Target>
 
     <!-- Validate assembly name -->
-    <Target Name="Test" BeforeTargets="PreBuildEvent">
+    <Target Name="ValidateAssemblyName" BeforeTargets="PreBuildEvent">
         <PropertyGroup>
             <ExpectedAssemblyName>JKMP.Plugin.$(PluginId)</ExpectedAssemblyName>
         </PropertyGroup>
