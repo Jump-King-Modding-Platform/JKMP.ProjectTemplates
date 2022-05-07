@@ -35,6 +35,18 @@
         <ContentFiles Include="$(TargetDir)Content\**\*.*" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Compile Remove="bin\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Remove="bin\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="bin\**" />
+    </ItemGroup>
+
     <!-- Import development variables from the solution directory -->
     <PropertyGroup>
         <DevVarsFile>$(SolutionDir)DevVars.targets</DevVarsFile>
