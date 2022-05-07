@@ -55,15 +55,6 @@
         <Error Text="The specified game directory '%(GameDirectory.Identity)' does not exist." Condition="!Exists(%(GameDirectory.Identity))" />
     </Target>
 
-    <!-- Validate assembly name -->
-    <Target Name="ValidateAssemblyName" BeforeTargets="PreBuildEvent">
-        <PropertyGroup>
-            <ExpectedAssemblyName>JKMP.Plugin.$(PluginId)</ExpectedAssemblyName>
-        </PropertyGroup>
-
-        <Error Text="The assembly '$(AssemblyName)' name needs to match '$(ExpectedAssemblyName)'." Condition="$(AssemblyName) != $(ExpectedAssemblyName)" />
-    </Target>
-
     <!-- Copy files to game directories -->
     <Target Name="CopyFilesAfterBuild" AfterTargets="PostBuildEvent" Condition="$(CI) == '' and $(DevVarsFileExists)" Outputs="%(GameDirectory.Identity)">
         <PropertyGroup Condition="$(DevVarsFileExists)">
